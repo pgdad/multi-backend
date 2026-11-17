@@ -1,0 +1,36 @@
+# multi-backend default configuration (mounted at /etc/multi-backend/config.yaml).
+# Everything except "server" can be inspected and changed at runtime via the API on :9000.
+# Environment overrides: MB_BACKENDS=python,go:3,java  MB_MODE=weighted  MB_FANOUT_TIMEOUT_MS=5000
+
+server:
+  proxy_port: 8080          # Envoy listener (client traffic)
+  api_port: 9000            # control API
+  envoy_concurrency: 2      # Envoy worker threads (round robin state is per worker)
+  envoy_log_level: warning
+  drain_seconds: 5          # grace period before a removed backend's process is stopped
+  stats_log_seconds: 60     # periodic {"type":"stats"} log record; 0 disables
+  log_requests_stdout: true # one {"type":"request"} JSON line per request on stdout
+
+mode: round_robin           # round_robin | weighted | fanout
+
+fanout:
+  timeout_ms: 10000         # per-backend timeout when sending to all backends
+  success_min: 200          # first response with status in [success_min, success_max] wins
+  success_max: 299
+
+health_check:
+  path: /health
+  interval_ms: 2000
+
+backends:
+  # runtime: python | go | java | rust selects the built-in sample backend.
+  # Use "command: [...]" for your own server (it receives PORT and BACKEND_NAME env vars),
+  # or "address"+"port" without command/runtime for a server the controller does not start.
+  - name: python
+    runtime: python
+    port: 8001
+    weight: 1
+  - name: go
+    runtime: go
+    port: 8002
+    weight: 1

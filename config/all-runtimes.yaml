@@ -1,0 +1,7 @@
+# Example: all four runtimes, weighted routing.
+mode: weighted
+backends:
+  - {name: python, runtime: python, port: 8001, weight: 4}
+  - {name: go,     runtime: go,     port: 8002, weight: 3}
+  - {name: java,   runtime: java,   port: 8003, weight: 2}
+  - {name: rust,   runtime: rust,   port: 8004, weight: 1}
